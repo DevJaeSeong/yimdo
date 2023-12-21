@@ -44,6 +44,7 @@ public class CookieUtil {
 		Cookie cookie = new Cookie(ServerConfig.IDENTIFY_TOKEN_NAME, null);
 		cookie.setDomain(request.getServerName());
 		cookie.setPath("/");
+		cookie.setHttpOnly(true);
 		cookie.setSecure(false);
 		cookie.setMaxAge(0);
 		
