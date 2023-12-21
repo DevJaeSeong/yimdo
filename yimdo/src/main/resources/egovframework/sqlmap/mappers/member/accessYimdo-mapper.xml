@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="egovframework.web.member.accessYimdo.service.impl.AccessYimdoMapper">
+
+	<resultMap id="PurposeEntryVoMap" type="PurposeEntryVo">
+        <result property="purposeEntryCode" column="PURPOSE_ENTRY_CODE"/>
+        <result property="purposeEntryName" column="PURPOSE_ENTRY_NAME"/>
+    </resultMap>
+    
+	<resultMap id="YimdoInfoVoMap" type="YimdoInfoVo">
+        <result property="yimdoCode" column="YIMDO_CODE"/>
+        <result property="yimdoName" column="YIMDO_NAME"/>
+        <result property="yimdoSido" column="YIMDO_SIDO"/>
+        <result property="yimdoGungu" column="YIMDO_GUNGU"/>
+        <result property="yimdoDetail" column="YIMDO_DETAIL"/>
+        <result property="yimdoAddress" column="YIMDO_ADDRESS"/>
+        <result property="yimdoDistance" column="YIMDO_DISTANCE"/>
+    </resultMap>
+    
+    <select id="getPurposeEntryList" resultMap="PurposeEntryVoMap">
+		SELECT 
+			PURPOSE_ENTRY_CODE,
+			PURPOSE_ENTRY_NAME
+		FROM 
+			PURPOSE_ENTRY 
+	</select>
+	
+	<select id="getYimdoInfoList" resultMap="YimdoInfoVoMap">
+		SELECT 
+			YIMDO_CODE,
+			YIMDO_NAME,
+			YIMDO_SIDO,
+			YIMDO_GUNGU,
+			YIMDO_DETAIL,
+			YIMDO_ADDRESS,
+			YIMDO_DISTANCE
+		FROM 
+			YIMDO_INFO 
+	</select>
+	
+	<insert id="insertRequestEntryYimdo" parameterType="RequestEntryYimdoVo">
+		INSERT INTO
+			REQUEST_ENTRY_YIMDO
+			(
+				USER_ID,
+				PURPOSE_ENTRY_CODE,
+				YIMDO_CODE,
+				EXPECTED_ENTRY_DATE,
+				EXPECTED_EXIT_DATE,
+				CAR_NUM,
+				ENTRY_NUM,
+				REG_DATE,
+				MOD_DATE
+			)
+			VALUES
+			(
+				#{userId},
+				#{purposeEntryCode},
+				#{yimdoCode},
+				#{expectedEntryDate},
+				#{expectedExitDate},
+				#{carNum},
+				#{entryNum},
+				NOW(),
+				NOW()
+			)
+	</insert>
+	
+</mapper>

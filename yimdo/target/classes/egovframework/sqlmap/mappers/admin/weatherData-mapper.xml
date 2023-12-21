@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="egovframework.web.admin.weatherData.mapper.WeatherDataMapper">
+    
+	<resultMap id="WeatherDataVoMap" type="WeatherDataVo">
+		<result property="num" 			column="NUM"/>
+		<result property="breakerId" 	column="BREAKER_ID"/>
+		<result property="regDate" 		column="REG_DATE"/>
+		<result property="dir" 			column="DIR"/>
+		<result property="tmp" 			column="TMP"/>
+		<result property="hm" 			column="HM"/>
+		<result property="wind" 		column="WIND"/>
+		<result property="gust" 		column="GUST"/>
+		<result property="rain" 		column="RAIN"/>
+		<result property="uv" 			column="UV"/>
+		<result property="light"		column="LIGHT"/>
+	</resultMap>
+	
+	<select id="getWeatherData" parameterType="WeatherDataSearchVo" resultMap="WeatherDataVoMap">
+		SELECT
+			NUM
+			, BREAKER_ID
+			, DATE_FORMAT(REG_DATE, '%Y-%m-%d %H:%i:%s') AS REG_DATE
+			, DIR
+			, TMP
+			, HM
+			, WIND
+			, GUST
+			, RAIN
+			, UV
+			, LIGHT
+		FROM
+			WEATHER_DATA
+		ORDER BY
+			NUM DESC
+		<if test="count != null">
+		LIMIT
+			#{count}
+		</if>
+	</select>
+	
+</mapper>

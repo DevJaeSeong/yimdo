@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="egovframework.web.admin.imdoAccessHistory.service.impl.ImdoAccessHistoryMapper">
+    
+	<resultMap id="EntryYimdoVoMap" type="EntryYimdoVo">
+		<result property="requestEntryId" 		column="REQUEST_ENTRY_ID"/>
+		<result property="userId" 				column="USER_ID"/>
+		<result property="userNm" 				column="USER_NM"/>
+		<result property="purposeEntryCode" 	column="PURPOSE_ENTRY_CODE"/>
+		<result property="purposeEntryName" 	column="PURPOSE_ENTRY_NAME"/>
+		<result property="yimdoCode" 			column="YIMDO_CODE"/>
+		<result property="yimdoName" 			column="YIMDO_NAME"/>
+		<result property="expectedEntryDate" 	column="EXPECTED_ENTRY_DATE"/>
+		<result property="expectedExitDate" 	column="EXPECTED_EXIT_DATE"/>
+		<result property="carNum" 				column="CAR_NUM"/>
+		<result property="entryNum" 			column="ENTRY_NUM"/>
+		<result property="regDate" 				column="REG_DATE"/>
+		<result property="modDate" 				column="MOD_DATE"/>
+		<result property="entryDate" 			column="ENTRY_DATE"/>
+		<result property="exitDate" 			column="EXIT_DATE"/>
+		<result property="entryHistoryId" 		column="ENTRY_HISTORY_ID"/>
+		<result property="breakerId" 			column="BREAKER_ID"/>
+	</resultMap>
+    
+	<select id="selectRequestAccessYimdo" resultMap="EntryYimdoVoMap">
+		SELECT
+			REQUEST_ENTRY_ID,
+			USER_ID,
+			PURPOSE_ENTRY_CODE,
+			YIMDO_CODE,
+			EXPECTED_ENTRY_DATE,
+			EXPECTED_EXIT_DATE,
+			CAR_NUM,
+			ENTRY_NUM,
+			REG_DATE,
+			MOD_DATE,
+			ENTRY_DATE,
+			EXIT_DATE
+		FROM
+			REQUEST_ENTRY_YIMDO
+		ORDER BY 
+			REQUEST_ENTRY_ID DESC LIMIT 1;
+	</select>
+	
+	<insert id="insertAccessHistory">
+		INSERT INTO
+			ENTRY_YIMDO_HISTORY
+		(
+			REQUEST_ENTRY_ID,
+			USER_ID,
+			PURPOSE_ENTRY_CODE,
+			YIMDO_CODE,
+			EXPECTED_ENTRY_DATE,
+			EXPECTED_EXIT_DATE,
+			CAR_NUM,
+			ENTRY_NUM,
+			REG_DATE,
+			MOD_DATE,
+			ENTRY_DATE,
+			EXIT_DATE,
+			BREAKER_ID
+		) VALUES (
+			#{requestEntryId},
+			#{userId},
+			#{purposeEntryCode},
+			#{yimdoCode},
+			#{expectedEntryDate},
+			#{expectedExitDate},
+			#{carNum},
+			#{entryNum},
+			#{regDate},
+			#{modDate},
+			#{entryDate},
+			#{exitDate},
+			#{breakerId}
+		)
+	</insert>
+	
+	<update id="updateRequestAccessYimdoEntry">
+		UPDATE 
+			REQUEST_ENTRY_YIMDO
+		SET 
+			ENTRY_DATE = NOW()
+		WHERE 
+			REQUEST_ENTRY_ID = (
+			SELECT
+				MAX_ID
+			FROM
+				(
+				SELECT
+					MAX(REQUEST_ENTRY_ID) AS MAX_ID
+				FROM
+					REQUEST_ENTRY_YIMDO
+				) T
+		)
+	</update>
+	
+	<update id="updateRequestAccessYimdoExit">
+		UPDATE 
+			REQUEST_ENTRY_YIMDO
+		SET 
+			EXIT_DATE = NOW()
+		WHERE 
+			REQUEST_ENTRY_ID = (
+			SELECT
+				MAX_ID
+			FROM
+				(
+				SELECT
+					MAX(REQUEST_ENTRY_ID) AS MAX_ID
+				FROM
+					REQUEST_ENTRY_YIMDO
+				) T
+		)
+	</update>
+	
+	<select id="selectAccessHistoryList" resultMap="EntryYimdoVoMap">
+		SELECT
+			E.REQUEST_ENTRY_ID AS REQUEST_ENTRY_ID,
+			E.USER_ID AS USER_ID,
+			I.USER_NM AS USER_NM,
+			E.PURPOSE_ENTRY_CODE AS PURPOSE_ENTRY_CODE,
+			P.PURPOSE_ENTRY_NAME AS PURPOSE_ENTRY_NAME,
+			E.YIMDO_CODE AS YIMDO_CODE,
+			Y.YIMDO_NAME AS YIMDO_NAME,
+			DATE_FORMAT(E.EXPECTED_ENTRY_DATE, '%Y-%m-%d %H:%i:%s') AS EXPECTED_ENTRY_DATE,
+			DATE_FORMAT(E.EXPECTED_EXIT_DATE, '%Y-%m-%d %H:%i:%s') AS EXPECTED_EXIT_DATE,
+			E.CAR_NUM AS CAR_NUM,
+			E.ENTRY_NUM AS ENTRY_NUM,
+			DATE_FORMAT(E.REG_DATE, '%Y-%m-%d %H:%i:%s') AS REG_DATE,
+			DATE_FORMAT(E.MOD_DATE, '%Y-%m-%d %H:%i:%s') AS MOD_DATE,
+			DATE_FORMAT(E.ENTRY_DATE, '%Y-%m-%d %H:%i:%s') AS ENTRY_DATE,
+			DATE_FORMAT(E.EXIT_DATE, '%Y-%m-%d %H:%i:%s') AS EXIT_DATE,
+			E.ENTRY_HISTORY_ID AS ENTRY_HISTORY_ID,
+			E.BREAKER_ID AS BREAKER_ID
+		FROM
+			ENTRY_YIMDO_HISTORY AS E
+			JOIN I_USER AS I ON E.USER_ID = I.USER_ID
+			JOIN PURPOSE_ENTRY AS P ON E.PURPOSE_ENTRY_CODE = P.PURPOSE_ENTRY_CODE
+			JOIN YIMDO_INFO AS Y ON E.YIMDO_CODE = Y.YIMDO_CODE
+		<where>
+			<choose>
+				<when test="sido != null and sido != ''">
+					AND Y.YIMDO_SIDO = #{sido}
+				</when>
+			</choose>
+			<choose>
+				<when test="sigungu != null and sigungu != ''">
+					AND Y.YIMDO_GUNGU = #{sigungu}
+				</when>
+			</choose>
+			<choose>
+				<when test="purposeEntryCode != null and purposeEntryCode != ''">
+					AND E.PURPOSE_ENTRY_CODE = #{purposeEntryCode}
+				</when>
+			</choose>
+			<choose>
+				<when test="dateStar != null and dateStar != ''">
+					AND E.EXPECTED_ENTRY_DATE >= #{dateStar}
+				</when>
+			</choose>
+			<choose>
+				<when test="dateEnd != null and dateEnd != ''">
+					<![CDATA[AND E.EXPECTED_EXIT_DATE <= #{dateEnd}]]>
+				</when>
+			</choose>
+			<choose>
+				<when test="breakerId != null and breakerId != ''">
+					AND E.EXPECTED_ENTRY_DATE >= #{breakerId}
+				</when>
+			</choose>
+			<choose>
+				<when test="breakerId != null and breakerId != ''">
+					AND E.BREAKER_ID = #{breakerId}
+				</when>
+			</choose>
+			<choose>
+				<when test="userNm != null and userNm != ''">
+					AND I.USER_NM = #{userNm}
+				</when>
+			</choose>
+		</where>
+		ORDER BY E.ENTRY_HISTORY_ID DESC
+		LIMIT #{firstIndex}, #{pageUnit}
+	</select>
+	
+	<select id="selectAccessHistoryListTotalCount" resultType="int">
+		SELECT
+			COUNT(ENTRY_HISTORY_ID)
+		FROM
+			ENTRY_YIMDO_HISTORY AS E
+			JOIN I_USER AS I ON E.USER_ID = I.USER_ID
+			JOIN PURPOSE_ENTRY AS P ON E.PURPOSE_ENTRY_CODE = P.PURPOSE_ENTRY_CODE
+			JOIN YIMDO_INFO AS Y ON E.YIMDO_CODE = Y.YIMDO_CODE
+		<where>
+			<choose>
+				<when test="sido != null and sido != ''">
+					AND Y.YIMDO_SIDO = #{sido}
+				</when>
+			</choose>
+			<choose>
+				<when test="sigungu != null and sigungu != ''">
+					AND Y.YIMDO_GUNGU = #{sigungu}
+				</when>
+			</choose>
+			<choose>
+				<when test="purposeEntryCode != null and purposeEntryCode != ''">
+					AND E.PURPOSE_ENTRY_CODE = #{purposeEntryCode}
+				</when>
+			</choose>
+			<choose>
+				<when test="dateStar != null and dateStar != ''">
+					AND E.EXPECTED_ENTRY_DATE >= #{dateStar}
+				</when>
+			</choose>
+			<choose>
+				<when test="dateEnd != null and dateEnd != ''">
+					<![CDATA[AND E.EXPECTED_EXIT_DATE <= #{dateEnd}]]>
+				</when>
+			</choose>
+			<choose>
+				<when test="breakerId != null and breakerId != ''">
+					AND E.EXPECTED_ENTRY_DATE >= #{breakerId}
+				</when>
+			</choose>
+			<choose>
+				<when test="breakerId != null and breakerId != ''">
+					AND E.BREAKER_ID = #{breakerId}
+				</when>
+			</choose>
+			<choose>
+				<when test="userNm != null and userNm != ''">
+					AND I.USER_NM = #{userNm}
+				</when>
+			</choose>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="egovframework.api.mapper.ApiMapper">
+
+	<insert id="insertMountainWeatherData" parameterType="MountainWeatherVo">
+	INSERT INTO API_MOUNTAIN_WEATHER_INFO (
+		m_localarea,
+		m_obsid,
+		m_obsname,
+		m_tm,
+		m_cprn,
+		m_rn,
+		m_pa,
+		m_ts,
+		m_hm10m,
+		m_hm2m,
+		m_tm10m,
+		m_tm2m,
+		m_wd10m,
+		m_wd10mstr,
+		m_wd2m,
+		m_wd2mstr,
+		m_ws10m,
+		m_ws2m,
+		m_req_date,
+		m_reg_date
+	) VALUES (
+		#{m_localarea},
+		#{m_obsid},
+		#{m_obsname},
+		#{m_tm},
+		#{m_cprn},
+		#{m_rn},
+		#{m_pa},
+		#{m_ts},
+		#{m_hm10m},
+		#{m_hm2m},
+		#{m_tm10m},
+		#{m_tm2m},
+		#{m_wd10m},
+		#{m_wd10mstr},
+		#{m_wd2m},
+		#{m_wd2mstr},
+		#{m_ws10m},
+		#{m_ws2m},
+		#{m_req_date},
+		#{m_reg_date}
+	)
+	</insert>
+	
+	<insert id="insertForestPointData" parameterType="ForestPointVo">
+	INSERT INTO API_FOREST_POINT (
+		f_analdate,
+		f_area,
+		f_d1,
+		f_d2,
+		f_d3,
+		f_d4,
+		f_doname,
+		f_maxi,
+		f_meanavg,
+		f_mini,
+		f_regioncode,
+		f_sigucode,
+		f_sigun,
+		f_std,
+		f_upplocalcd,
+		f_req_date,
+		f_reg_date
+	) VALUES (
+		#{f_analdate},
+		#{f_area},
+		#{f_d1},
+		#{f_d2},
+		#{f_d3},
+		#{f_d4},
+		#{f_doname},
+		#{f_maxi},
+		#{f_meanavg},
+		#{f_mini},
+		#{f_regioncode},
+		#{f_sigucode},
+		#{f_sigun},
+		#{f_std},
+		#{f_upplocalcd},
+		#{f_req_date},
+		#{f_reg_date}
+	)
+	</insert>
+	
+	<insert id="insertRiseSetInfoData" parameterType="RiseSetInfoVo">
+	INSERT INTO API_RISE_SET_INFO (
+		r_aste,
+		r_astm,
+		r_civile,
+		r_civilm,
+		r_latitude,
+		r_latitudeNum,
+		r_location,
+		r_locdate,
+		r_longitude,
+		r_longitudeNum,
+		r_moonrise,
+		r_moonset,
+		r_moontransit,
+		r_naute,
+		r_nautm,
+		r_sunrise,
+		r_sunset,
+		r_suntransit,
+		r_req_date,
+		r_reg_date
+	) VALUES (
+		#{r_aste},
+		#{r_astm},
+		#{r_civile},
+		#{r_civilm},
+		#{r_latitude},
+		#{r_latitudeNum},
+		#{r_location},
+		#{r_locdate},
+		#{r_longitude},
+		#{r_longitudeNum},
+		#{r_moonrise},
+		#{r_moonset},
+		#{r_moontransit},
+		#{r_naute},
+		#{r_nautm},
+		#{r_sunrise},
+		#{r_sunset},
+		#{r_suntransit},
+		#{r_req_date},
+		#{r_reg_date}
+	)
+	</insert>
+	
+	<insert id="insertWthrWrnInfoData" parameterType="WthrWrnInfoVo">
+	INSERT INTO API_WTHRWRN_INFO (
+		w_allEndTime,
+		w_areaCode,
+		w_areaName,
+		w_cancel,
+		w_command,
+		w_endTime,
+		w_stnId,
+		w_tmFc,
+		w_tmSeq,
+		w_warnVar,
+		w_warnStress,
+		w_startTime,
+		w_req_date,
+		w_reg_date
+	) VALUES (
+		#{w_allEndTime},
+		#{w_areaCode},
+		#{w_areaName},
+		#{w_cancel},
+		#{w_command},
+		#{w_endTime},
+		#{w_stnId},
+		#{w_tmFc},
+		#{w_tmSeq},
+		#{w_warnVar},
+		#{w_warnStress},
+		#{w_startTime},
+		#{w_req_date},
+		#{w_reg_date}
+	)
+	</insert>
+	
+</mapper>

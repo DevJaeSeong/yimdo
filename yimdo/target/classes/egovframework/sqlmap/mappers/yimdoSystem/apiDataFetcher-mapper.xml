@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="egovframework.yimdoSystem.apiDataFetcher.ApiDataFetcherMapper">
+
+	<select id="getMountainWeatherVo" resultType="MountainWeatherVo">
+		SELECT
+			m_obsname,
+			m_cprn,
+			m_hm2m,
+			m_ws10m
+		FROM
+			API_MOUNTAIN_WEATHER_INFO
+		WHERE
+			m_obsid = #{m_obsid}
+			AND m_cprn IS NOT NULL
+			AND m_hm2m IS NOT NULL
+			AND m_ws10m IS NOT NULL
+			AND m_cprn != 'null'
+			AND m_hm2m != 'null'
+			AND m_ws10m != 'null'
+		ORDER BY m_no DESC
+		LIMIT 1
+	</select>
+	
+	<select id="getRiseSetInfoVo" resultType="RiseSetInfoVo">
+		SELECT
+			r_sunrise,
+			r_sunset
+		FROM
+			API_RISE_SET_INFO
+		WHERE
+			r_sunrise IS NOT NULL
+			AND r_sunrise IS NOT NULL
+			AND r_sunrise != 'null'
+			AND r_sunrise != 'null'
+		ORDER BY r_no DESC
+		LIMIT 1
+	</select>
+	
+</mapper>

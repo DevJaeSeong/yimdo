@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="egovframework.web.admin.elementInfo.service.impl.ElementInfoMapper">
+    
+    <update id="updateElement">
+		UPDATE
+			ELEMENT_INFO
+		SET
+			ELEMENT_VALUE = #{elementValue}
+		WHERE
+			ELEMENT_CODE = #{elementCode}
+    </update>
+	
+</mapper>

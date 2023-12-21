@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <typeAliases>
+    
+		<typeAlias alias="Integer" type="java.lang.Integer"/>
+		<typeAlias alias="Map" type="java.util.Map"/>
+		
+		<!-- api -->
+		<typeAlias alias="MountainWeatherVo" type="egovframework.api.vo.MountainWeatherVo" />
+		<typeAlias alias="ForestPointVo" type="egovframework.api.vo.ForestPointVo" />
+		<typeAlias alias="RiseSetInfoVo" type="egovframework.api.vo.RiseSetInfoVo" />
+		<typeAlias alias="WthrWrnInfoVo" type="egovframework.api.vo.WthrWrnInfoVo" />
+		
+		<!-- web common -->
+		<typeAlias alias="YimdoInfoVo" type="egovframework.web.common.vo.YimdoInfoVo"/>
+		<typeAlias alias="BreakerInfoVo" type="egovframework.web.common.vo.BreakerInfoVo"/>
+		<typeAlias alias="SidoVo" type="egovframework.web.common.vo.SidoVo"/>
+		<typeAlias alias="SigunguVo" type="egovframework.web.common.vo.SigunguVo"/>
+		<typeAlias alias="ModifyElementVo" type="egovframework.web.common.vo.ModifyElementVo"/>
+		
+		<!-- security -->
+		<typeAlias alias="UserVo" type="egovframework.serverConfig.security.vo.UserVo"/>
+		<typeAlias alias="UserDetailVo" type="egovframework.serverConfig.security.vo.UserDetailVo"/>
+		
+		<!-- member -->
+		<typeAlias alias="PurposeEntryVo" type="egovframework.web.member.accessYimdo.vo.PurposeEntryVo"/>
+		<typeAlias alias="RequestEntryYimdoVo" type="egovframework.web.member.accessYimdo.vo.RequestEntryYimdoVo"/>
+		
+		<!-- admin -->
+		<typeAlias alias="BreakerManagementVo" type="egovframework.web.admin.breakerManagement.vo.BreakerManagementVo" />
+		<typeAlias alias="EntryYimdoVo" type="egovframework.web.admin.imdoAccessHistory.vo.EntryYimdoVo"/>
+		<typeAlias alias="WeatherDataVo" type="egovframework.web.admin.weatherData.vo.WeatherDataVo"/>
+		<typeAlias alias="WeatherDataSearchVo" type="egovframework.web.admin.weatherData.vo.WeatherDataSearchVo"/>
+		
+		<!-- yimdoSystem -->
+		<typeAlias alias="BreakerHistoryVo" type="egovframework.yimdoSystem.breakerController.BreakerHistoryVo" />
+		
+    </typeAliases>
+</configuration>

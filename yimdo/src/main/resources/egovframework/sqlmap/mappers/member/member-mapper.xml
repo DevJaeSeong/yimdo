@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="egovframework.web.member.main.service.impl.MemberMapper">
+	
+	<select id="getCountById" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM 
+			I_USER 
+		WHERE
+			USER_ID = #{userId};
+	</select>
+	
+	<insert id="createAccount">
+		INSERT INTO
+			I_USER
+		(
+			USER_ID,
+			PASSWORD,
+			USER_NM,
+			MBTLNUM,
+			CAR_NUMBER,
+			AFFILIATION,
+			EMAIL,
+			AUTHORITY_ID,
+			IS_ACCOUNT_NON_EXPIRED,
+			IS_ACCOUNT_NON_LOCKED,
+			IS_CREDENTIALS_NON_EXPIRED,
+			IS_ENABLED,
+			CREATED_DATE,
+			MODIFIED_DATE
+		)
+		VALUES
+		(
+			#{userId},
+			#{password},
+			#{userNm},
+			#{mbtlNum},
+			#{carNumber},
+			#{affiliation},
+			#{email},
+			#{authorityId},
+			#{isAccountNonExpired},
+			#{isAccountNonLocked},
+			#{isCredentialsNonExpired},
+			#{isEnabled},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+</mapper>
