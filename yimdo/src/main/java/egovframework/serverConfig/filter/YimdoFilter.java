@@ -1,8 +1,6 @@
 package egovframework.serverConfig.filter;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,9 +19,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import egovframework.common.CookieUtil;
 import egovframework.serverConfig.ServerConfig;
 import egovframework.serverConfig.security.beans.AesEncrypter;
-import egovframework.serverConfig.security.exception.DifferentAuthenticatedInfoException;
+import egovframework.serverConfig.security.exception.CustomAuthenticatedInfoException;
 import egovframework.serverConfig.security.vo.YimdoUser;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,8 +37,6 @@ public class YimdoFilter extends OncePerRequestFilter {
 	
 	public YimdoFilter(AesEncrypter aesEncrypter, Executor executor) {
 		
-		super();
-		
 		this.aesEncrypter = aesEncrypter;
 		this.executor = executor;
 	}
@@ -49,75 +46,55 @@ public class YimdoFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
         
 		request = new YimdoServletRequestWrapper(request, executor);
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		
-		printRequest((YimdoServletRequestWrapper) request);
+		printRequest((YimdoServletRequestWrapper) request, authentication);
 		
-		validateAuthentication(request);
+		if (!(authentication instanceof AnonymousAuthenticationToken))
+			validateAuthentication(request, (YimdoUser) authentication.getPrincipal());
 		
 		filterChain.doFilter(request, response);
 	}
 	
-	private void validateAuthentication(HttpServletRequest request) throws AuthenticationException {
+	private void validateAuthentication(HttpServletRequest request, YimdoUser yimdoUser) throws AuthenticationException {
 		
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		
-		if (authentication instanceof AnonymousAuthenticationToken) {
-			
-			log.debug("비로그인 사용자");
-			return;
-		}
-	    
-		YimdoUser yimdoUser = (YimdoUser) authentication.getPrincipal();
 		String authenticatedIp = yimdoUser.getAuthenticatedIp();
 		String requestIp = request.getRemoteAddr();
-		
-		/*
-		 * AuthenticationException 및 AccessDeniedException 를 발생시켜야 ExceptionTranslationFilter 에서 처리가능.
-		 */
-		
-		if (!authenticatedIp.equals(requestIp)) {
-			
-			throw new DifferentAuthenticatedInfoException("요청ip와 인증된ip가 다름 (요청ip: " + requestIp + ", 인증된ip: " + authenticatedIp + ")");
-		}
 		
 		String authenticatedSessionId = yimdoUser.getAuthenticatedSessionId();
 		String requestSessionId = request.getRequestedSessionId();
 		
-		if (!authenticatedSessionId.equals(requestSessionId)) {
-			
-			throw new DifferentAuthenticatedInfoException("요청sessionId와 인증된sessionId가 다름 (요청sessionId: " + requestSessionId + ", 인증된sessionId: " + authenticatedSessionId + ")");
-		}
-		
+		Cookie cookie = CookieUtil.getCookie(ServerConfig.IDENTIFY_TOKEN_NAME, request);
 		String identifyTokenValue = yimdoUser.getIdentifyTokenValue();
 		String requestIdentifyTokenValue = "";
-		Cookie[] cookies = request.getCookies();
 		
-		for (Cookie cookie : cookies) {
+		// IP 검사
+		if (!authenticatedIp.equals(requestIp))
+			throw new CustomAuthenticatedInfoException("요청ip와 인증된ip가 다름 (요청ip: " + requestIp + ", 인증된ip: " + authenticatedIp + ")");
+		
+		// sessionId 검사
+		if (!authenticatedSessionId.equals(requestSessionId))
+			throw new CustomAuthenticatedInfoException("요청sessionId와 인증된sessionId가 다름 (요청sessionId: " + requestSessionId + ", 인증된sessionId: " + authenticatedSessionId + ")");
+		
+		// 식별토큰 검사
+		if (cookie == null)
+			throw new CustomAuthenticatedInfoException("식별토큰을 가져오지 못했습니다.");
+		
+		try { requestIdentifyTokenValue = aesEncrypter.decrypt(cookie.getValue()); } 
+		catch (Exception e) {
 			
-			if (ServerConfig.IDENTIFY_TOKEN_NAME.equals(cookie.getName())) {
-				
-				try {
-					
-					requestIdentifyTokenValue = aesEncrypter.decrypt(cookie.getValue());
-					
-				} catch (UnsupportedEncodingException | GeneralSecurityException e) {
-					
-					e.printStackTrace();
-					throw new DifferentAuthenticatedInfoException("복호화 도중 문제 발생: " + e.getMessage());
-				}
-			}
+			e.printStackTrace();
+			throw new CustomAuthenticatedInfoException("복호화 도중 문제 발생: " + e.getMessage());
 		}
 		
-		if (!identifyTokenValue.equals(requestIdentifyTokenValue)) {
-			
-			throw new DifferentAuthenticatedInfoException("요청identifyTokenValue와 저장된identifyTokenValue가 다름 (요청identifyTokenValue: " + requestIdentifyTokenValue + ", 저장된identifyTokenValue: " + identifyTokenValue + ")");
-		}
+		if (!identifyTokenValue.equals(requestIdentifyTokenValue))
+			throw new CustomAuthenticatedInfoException("요청identifyTokenValue와 저장된identifyTokenValue가 다름 (요청identifyTokenValue: " + requestIdentifyTokenValue + ", 저장된identifyTokenValue: " + identifyTokenValue + ")");
 	}
 
 	/**
 	 * 서버에 접근하는 사용자의 정보를 콘솔에 출력.
 	 */
-	private void printRequest(YimdoServletRequestWrapper request) {
+	private void printRequest(YimdoServletRequestWrapper request, Authentication authentication) {
 		
 		String requestURI = request.getRequestURI();
 		String remoteAddr = request.getRemoteAddr();
@@ -126,27 +103,20 @@ public class YimdoFilter extends OncePerRequestFilter {
 		String requestBody = readRequest(request);
 		String principal = "";
 		
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		
-		if (authentication instanceof UsernamePasswordAuthenticationToken) {
-			
+		if (authentication instanceof UsernamePasswordAuthenticationToken)
 			principal = ((YimdoUser) authentication.getPrincipal()).toString();
-			
-		} else if (authentication instanceof AnonymousAuthenticationToken) {
-			
-			principal = (String) authentication.getPrincipal();
-		}
 		
-		log.debug("사용자: [\"{}\", \"{}\", {}]", remoteAddr, sessionId, principal);
-		log.debug("요청내용: [({}) \"{}\", \"{}\"]", method, requestURI, requestBody);
+		else if (authentication instanceof AnonymousAuthenticationToken)
+			principal = (String) authentication.getPrincipal();
+		
+		log.debug("사용자: [\"{}\", \"{}\", {}], 요청내용: [({}) \"{}\", \"{}\"]", remoteAddr, sessionId, principal, method, requestURI, requestBody);
 	}
 
 	private String readRequest(YimdoServletRequestWrapper request) {
 		
-		String method = request.getMethod();
 		String requestData = readParameters(request);
 		
-		if (!"GET".equals(method)) {
+		if (!"GET".equals(request.getMethod())) {
 			
 			if (request.getContentType().toLowerCase().contains("json")) {
 				

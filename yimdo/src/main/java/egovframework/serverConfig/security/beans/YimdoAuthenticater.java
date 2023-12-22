@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -20,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import egovframework.common.CookieUtil;
 import egovframework.serverConfig.ServerConfig;
 import egovframework.serverConfig.security.mapper.SecurityMapper;
 import egovframework.serverConfig.security.vo.YimdoUser;
@@ -160,12 +160,6 @@ public class YimdoAuthenticater {
 		YimdoUser yimdoUser = (YimdoUser) authentication.getPrincipal();
 		yimdoUser.setIdentifyTokenValue(randomString);
 		
-		Cookie cookie = new Cookie(ServerConfig.IDENTIFY_TOKEN_NAME, aesEncrypter.encrypt(randomString));
-		cookie.setDomain(request.getServerName());
-		cookie.setPath("/");
-		cookie.setSecure(false);
-		cookie.setHttpOnly(true);
-		
-		response.addCookie(cookie);
+		CookieUtil.sendCookie(ServerConfig.IDENTIFY_TOKEN_NAME, aesEncrypter.encrypt(randomString), request, response);
 	}
 }

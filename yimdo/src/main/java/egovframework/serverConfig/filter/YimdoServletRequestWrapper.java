@@ -23,18 +23,19 @@ public class YimdoServletRequestWrapper extends HttpServletRequestWrapper {
 
 	private final Executor executor;
 	private final byte[] requestData;
+	private final ByteArrayInputStream inputStream;
 
 	public YimdoServletRequestWrapper(HttpServletRequest request, Executor executor) throws IOException {
 
 		super(request);
+		
 		this.requestData = StreamUtils.copyToByteArray(request.getInputStream());
 		this.executor = executor;
+		this.inputStream = new ByteArrayInputStream(requestData);
 	}
 
 	@Override
 	public ServletInputStream getInputStream() {
-		
-		ByteArrayInputStream inputStream = new ByteArrayInputStream(requestData);
 		
 		return new ServletInputStream() {
 
@@ -53,7 +54,7 @@ public class YimdoServletRequestWrapper extends HttpServletRequestWrapper {
 			@Override
 			public boolean isReady() {
 				
-				return true;
+				return executor != null ? true : false;
 			}
 
 			@Override

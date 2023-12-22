@@ -53,18 +53,18 @@ public class ServerConfig {
 	 */
 	
 	/** 정상개방 코드 */
-	public static String breakerPolicyNormalOpen = "1001";
+	public static final String breakerPolicyNormalOpen = "1001";
 	
 	/** 정상차단 코드 */
-	public static String breakerPolicyNormalClose = "1002";
+	public static final String breakerPolicyNormalClose = "1002";
 	
 	/** 강제개방 코드 */
-	public static String breakerPolicyEmergencyOpen = "2001";
+	public static final String breakerPolicyEmergencyOpen = "2001";
 	
 	/** 강제차단 코드 */
-	public static String breakerPolicyEmergencyClose = "2002";
+	public static final String breakerPolicyEmergencyClose = "2002";
 	
 	/** 고장 코드 */
-	public static String breakerPolicyError = "3001";
+	public static final String breakerPolicyError = "3001";
 	
 }

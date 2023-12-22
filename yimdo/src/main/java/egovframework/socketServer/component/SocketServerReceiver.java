@@ -68,13 +68,18 @@ public class SocketServerReceiver {
 			e.printStackTrace();
 		}
     	
-    	if ((commandID & 0xff) == 0x14 || (commandID & 0xff) == 0x15) {
+    	if (commandID == 0x14 || commandID == 0x15) {
     		
         	if (runningBreakers.contains(deviceIdtoString))
         		runningBreakers.remove(deviceIdtoString);
     	}
     	
-    	switch (commandID & 0xff) {
+    	/*
+    	log.debug("0x23:{}, 0x21:{}, 0x14:{}, 0x15:{}, 0x27:{}, 0x30:{}"
+    			, commandID == 0x23, commandID == 0x21, commandID == 0x14, commandID == 0x15, commandID == 0x27, commandID == 0x30);
+    	*/
+    	
+    	switch (commandID) {
     	
 			case 0x23: // tcp 연결요청
 				connectionResponse(deviceIdtoString);
@@ -224,28 +229,12 @@ public class SocketServerReceiver {
 		
 		String compareCode = "";
 		
-    	switch (breakerPolicyCode) {
-    	
-			case "1001":
-				compareCode = "01";
-				break;
-				
-			case "1002":
-				compareCode = "02";
-				break;
-				
-			case "2001":
-				compareCode = "03";
-				break;
-				
-			case "2002":
-				compareCode = "04";
-				break;
-	
-			default:
-				break;
-		}
-    	
+		if 		(ServerConfig.breakerPolicyNormalOpen.equals(breakerPolicyCode)) 		compareCode = "01";
+		else if (ServerConfig.breakerPolicyNormalClose.equals(breakerPolicyCode)) 		compareCode = "02";
+		else if (ServerConfig.breakerPolicyEmergencyOpen.equals(breakerPolicyCode)) 	compareCode = "03";
+		else if (ServerConfig.breakerPolicyEmergencyClose.equals(breakerPolicyCode)) 	compareCode = "04";
+		else 																	 		compareCode = "05";
+		
     	if (breakerOpened.equals(compareCode)) return;
     	else log.warn("차단기 상태와 정책이 불일치하여 일치하도록 다시 차단기에 요청합니다.");
     	
@@ -478,6 +467,7 @@ public class SocketServerReceiver {
 	 * @param payload
 	 */
 	private void carDetectionEventReport(String breakerId, byte[] payload) {
+		log.debug("carDetectionEventReport() 메서드 호출");
 		
 		taskExecutor.execute(() -> {
 			

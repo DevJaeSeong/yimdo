@@ -4,44 +4,61 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import egovframework.serverConfig.ServerConfig;
-
 public class CookieUtil {
 
-	/**
-	 * 원하는 쿠키 삭제 메서드.
-	 * 
-	 * @param cookieName 삭제할 쿠키 이름
-	 * @param request
-	 * @param response
-	 */
-    public static void deleteCookie(String cookieName, HttpServletRequest request, HttpServletResponse response) {
+    /**
+     * 사용자에게 쿠키 전송.
+     * 
+     * @param cookieName 전달할 쿠키 이름
+     * @param value 전달할 쿠키 값
+     * @param request
+     * @param response
+     */
+    public static void sendCookie(String cookieName, String value, HttpServletRequest request, HttpServletResponse response) {
+    
+		Cookie cookie = new Cookie(cookieName, value);
+		cookie.setDomain(request.getServerName());
+		cookie.setPath("/");
+		cookie.setSecure(false);
+		cookie.setHttpOnly(true);
+		
+		response.addCookie(cookie);
+    }
+	
+    /**
+     * 사용자의 쿠키 가져오기.
+     * 
+     * @param cookieName 가져올 쿠키 이름
+     * @param request
+     * @return
+     */
+    public static Cookie getCookie(String cookieName, HttpServletRequest request) {
     	
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies != null) {
-        	
-            for (Cookie cookie : cookies) {
-            	
-                if (cookie.getName().equals(cookieName)) {
-                	
-                    cookie.setMaxAge(0);
-                    response.addCookie(cookie);
-                }
-            }
-        }
+    	Cookie wantedCookie = null;
+    	Cookie[] cookies = request.getCookies();
+    	
+		for (Cookie cookie : cookies) {
+			
+			if (cookieName.equals(cookie.getName())) {
+				
+				wantedCookie = cookie;
+				break;
+			}
+		}
+    	
+    	return wantedCookie;
     }
     
     /**
-     * 원하는 쿠키 삭제 메서드.
+     * 사용자의 쿠키 삭제.
      * 
      * @param cookieName 삭제할 쿠키 이름
      * @param request
      * @param response
      */
-    public static void deleteIdentifyToken(HttpServletRequest request, HttpServletResponse response) {
+    public static void deleteCookie(String cookieName, HttpServletRequest request, HttpServletResponse response) {
     	
-		Cookie cookie = new Cookie(ServerConfig.IDENTIFY_TOKEN_NAME, null);
+		Cookie cookie = new Cookie(cookieName, null);
 		cookie.setDomain(request.getServerName());
 		cookie.setPath("/");
 		cookie.setHttpOnly(true);

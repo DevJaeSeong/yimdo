@@ -45,7 +45,7 @@ public class BeaconService {
 			log.debug("userId: {}, breakerId: {}", userId, breakerId);
 		}
 		
-		log.debug("\"{}\"차단기 차량감지중인지 확인, {}", breakerId, carDetectionBreakers);
+		log.debug("\"{}\" 차단기 차량감지중인지 확인 => {}", breakerId, carDetectionBreakers);
 		
 		if (!carDetectionBreakers.contains(breakerId)) {
 			

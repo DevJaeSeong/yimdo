@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import egovframework.common.CookieUtil;
+import egovframework.serverConfig.ServerConfig;
 import egovframework.serverConfig.security.vo.UserVo;
 import egovframework.web.member.main.service.MemberService;
 import egovframework.web.member.main.vo.MemberVoForCreate;
@@ -86,7 +87,7 @@ public class HomeController {
 		HttpSession session = request.getSession();
 		log.debug("sessionId: \"{}\" 이 세션은 유효하지 않은 세션입니다. 로그인페이지로 이동합니다.", session.getId());
 		
-		CookieUtil.deleteIdentifyToken(request, response);
+		CookieUtil.deleteCookie(ServerConfig.IDENTIFY_TOKEN_NAME, request, response);
 		
 		return "redirect:/general/login.do";
 	}
@@ -97,7 +98,7 @@ public class HomeController {
 		HttpSession session = request.getSession();
 		log.debug("sessionId: \"{}\" 이 세션은 만료된 세션입니다. 로그인페이지로 이동합니다.", session.getId());
 		
-		CookieUtil.deleteIdentifyToken(request, response);
+		CookieUtil.deleteCookie(ServerConfig.IDENTIFY_TOKEN_NAME, request, response);
 		
 		return "redirect:/general/login.do";
 	}

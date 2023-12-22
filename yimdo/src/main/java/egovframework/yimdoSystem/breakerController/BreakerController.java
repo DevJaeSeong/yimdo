@@ -89,7 +89,7 @@ public class BreakerController {
 		String breakerId = breakerInfoVo.getBreakerId();
 		String compareStatusCode = switchStatusCode(breakerInfoVo.getBreakerStatusCode());
 		
-		if (socketServerUtil.validateBreakerStatus(breakerId)) {
+		if (!socketServerUtil.validateBreakerStatus(breakerId)) {
 			
 			log.debug("breakerRequest() 끝");
 			return 0;
@@ -113,27 +113,17 @@ public class BreakerController {
 		breakerHistoryVo.setDbReqDate(GlobalUtil.getNowDateTime());
 		breakerHistoryVo.setSystemControl(breakerInfoVo.getSystemControl());
 		
-		int retryCount = 0;
-		while (retryCount < 3) {
+		try {
 			
-			try {
-				
-				breakerControllerMapper.updateBreakerPolicyDetail(breakerHistoryVo);
-				breakerControllerMapper.insertBreakerHistory(breakerHistoryVo);
-				break;
-				
-			} catch (Exception e) {
-				
-				retryCount++;
-				log.error("DB 에러");
-				e.printStackTrace();
-			}
+			breakerControllerMapper.updateBreakerPolicyDetail(breakerHistoryVo);
+			breakerControllerMapper.insertBreakerHistory(breakerHistoryVo);
 			
-			if (retryCount >= 3) {
-				
-				log.debug("breakerRequest() 끝");
-				return 0;
-			}
+		} catch (Exception e) {
+
+			log.error("DB 에러");
+			e.printStackTrace();
+			log.debug("breakerRequest() 끝");
+			return 0;
 		}
 		
 		if (compareStatusCode.equals(ServerConfig.breakerPolicyNormalOpen))

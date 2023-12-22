@@ -84,7 +84,7 @@ public class MemberServiceImpl implements MemberService {
 		request.getSession().invalidate();
 		request.getSession(true);
 		
-		CookieUtil.deleteIdentifyToken(request, response);
+		CookieUtil.deleteCookie(ServerConfig.IDENTIFY_TOKEN_NAME, request, response);
 		
 		log.debug("logout() 끝");
 	}

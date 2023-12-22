@@ -146,9 +146,9 @@ public class SocketServer {
 				
 				try {
 					
-					log.debug("{} 소켓 닫힘", socket);
 					socket.close();
 					socketMap.remove(deviceIdtoString);
+					log.debug("{} 소켓 닫힘", socket);
                     
 				} catch (Exception e) {
 					
