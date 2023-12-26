@@ -209,14 +209,12 @@ public class SocketServerUtil {
 		if (byteArray.length != 4)
 			throw new IllegalArgumentException("크기가 4인 바이트 배열만 가능합니다.");
 		
-		int value = 0;
+		int byteArrayToInt = (byteArray[0] & 0xFF) << 24
+						   | (byteArray[1] & 0xFF) << 16
+						   | (byteArray[2] & 0xFF) << 8
+						   | (byteArray[3] & 0xFF);
 		
-		value = byteArray[0] << 24
-			  | byteArray[1] << 16
-			  | byteArray[2] << 8
-			  | byteArray[3];
-		
-		return value;
+		return byteArrayToInt;
 	}
 	
 	/**
