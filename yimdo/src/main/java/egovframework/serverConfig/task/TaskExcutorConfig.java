@@ -2,6 +2,7 @@ package egovframework.serverConfig.task;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -15,15 +16,15 @@ import egovframework.serverConfig.ServerConfig;
 public class TaskExcutorConfig {
 
 	@Bean("taskExecutor")
-    public ThreadPoolTaskExecutor taskExecutor() {
+    public TaskExecutor taskExecutor() {
     	
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         
         // 최대 작업 가능한 수 = 코어 스레드 수 + 대기 큐 크기
         
-        taskExecutor.setCorePoolSize(ServerConfig.CPU_CORE_SIZE); 	 // 기본 스레드 수 (임도 서버로 사용중인 192.168.0.125 PC는 cpu 코어수가 2임)
-        taskExecutor.setMaxPoolSize(ServerConfig.CPU_CORE_SIZE * 20); // 최대 스레드 수
-        taskExecutor.setQueueCapacity(50); 							 // 대기 큐 크기 (일반적으로 10 ~ 100 최대치는 Integer.MAX_VALUE 값을 설정)
+        threadPoolTaskExecutor.setCorePoolSize(ServerConfig.CPU_CORE_SIZE); 	 // 기본 스레드 수 (임도 서버로 사용중인 192.168.0.125 PC는 cpu 코어수가 2임)
+        threadPoolTaskExecutor.setMaxPoolSize(ServerConfig.CPU_CORE_SIZE * 20); // 최대 스레드 수
+        threadPoolTaskExecutor.setQueueCapacity(50); 							 // 대기 큐 크기 (일반적으로 10 ~ 100 최대치는 Integer.MAX_VALUE 값을 설정)
         //taskExecutor.setKeepAliveSeconds(60);						 // 놀고 있는 스레드가 제거되기까지 대기해야 하는 시간(초)
         //taskExecutor.setWaitForTasksToCompleteOnShutdown(true);	 // 스레드 풀을 종료할 때 대기 중인 모든 작업이 완료될 때까지 기다릴지 여부
         //taskExecutor.setAwaitTerminationSeconds(60);				 // 스레드 풀 종료 후 완료되기를 기다리는 시간(초)
@@ -48,6 +49,6 @@ public class TaskExcutorConfig {
         //taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         
         
-        return taskExecutor;
+        return threadPoolTaskExecutor;
     }
 }

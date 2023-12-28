@@ -5,11 +5,11 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -23,19 +23,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SocketServer {
 	
-	/** 멀티스레드 환경을 이용해 다수의 작업을 비동기적으로 처리하는 클래스. */
-	@Resource(name = "taskExecutor")
+	private ServerSocket serverSocket;
+	private final Map<String, Socket> socketMap = SocketServerContext.getSocketMap();
+	private final Set<String> runningBreakers = SocketServerContext.getRunningBreakers();
+	
 	private TaskExecutor taskExecutor;
-	
-	@Resource(name = "socketServerUtil")
 	private SocketServerUtil socketServerUtil;
-	
-	@Resource(name = "socketServerReceiver")
 	private SocketServerReceiver socketServerReceiver;
 	
-	/** 지정된 포트로 개방된 소켓서버를 저장한 맵 */
-	private Map<Integer, ServerSocket> serverSocketMap = new ConcurrentHashMap<Integer, ServerSocket>();
-	private Map<String, Socket> socketMap = SocketServerContext.getSocketMap();
+	@Autowired
+	public SocketServer(TaskExecutor taskExecutor,
+						SocketServerUtil socketServerUtil,
+						SocketServerReceiver socketServerReceiver) {
+		
+		this.taskExecutor = taskExecutor;
+		this.socketServerUtil = socketServerUtil;
+		this.socketServerReceiver = socketServerReceiver;
+	}
 	
 	/**
 	 * 소켓 서버 시작.
@@ -44,9 +48,9 @@ public class SocketServer {
     	log.debug("openSocket() 시작");
     	
     	try (ServerSocket serverSocket = new ServerSocket(ServerConfig.SOCKET_PORT)) {
-    		log.debug("{}포트 소켓 개방", ServerConfig.SOCKET_PORT);
     		
-    		serverSocketMap.put(ServerConfig.SOCKET_PORT, serverSocket);
+    		this.serverSocket = serverSocket;
+    		log.debug("\"{}\"포트 서버소켓 개방", ServerConfig.SOCKET_PORT);
     		
     		/*
     		 * 1. accept() 메서드는 ServerConfig.socketPort 포트로 소켓연결이 될때까지 block 상태를 유지하다가 연결요청이 들어오면 Socket 반환.
@@ -58,6 +62,8 @@ public class SocketServer {
     			try {
 					
     				Socket socket = serverSocket.accept();	// 연결 요청이 들어올때까지 block, 연결에 성공하면 Socket 객체를 반환하고 로직 진행.
+    				log.debug("연결된 socket: {}", socket);
+    				
     				taskExecutor.execute(new SocketServerRunnable(socket)); 
     				
 				} catch (Exception e) {
@@ -93,14 +99,13 @@ public class SocketServer {
 		public SocketServerRunnable(Socket socket) {
 			
 			this.socket = socket;
-			log.debug("연결된 socket: {}", socket);
 		}
 		
 		@Override
 		public void run() {
 			log.debug("run() 시작");
 			
-			String deviceIdtoString = null;
+			String breakerId = null;
 			
 			try {
 				
@@ -116,25 +121,23 @@ public class SocketServer {
 				 * 데이터를 보내지 않아도 연결되어있다면 -1을 반환하는게 아니라 blocking 되어 작업 대기.
 				 */
 				while ((bufferLen = inputStream.read(buffer)) != -1) {
-					log.trace("============================================================");
 					
 					byteArrayOutputStream.reset();
 					byteArrayOutputStream.write(buffer, 0, bufferLen);
 					
 					byte[] data = byteArrayOutputStream.toByteArray();
+					breakerId = socketServerUtil.hexDataToString((byte) data[1], (byte) data[2]);
 					
-					socketServerUtil.printByteData(data, "수신 데이터");
+					log.debug("데이터 수신: {}", socketServerUtil.printByteDataToString(data));
 					
-                	byte[] deviceId = {(byte) data[1], (byte) data[2]};
-                	deviceIdtoString = socketServerUtil.deviceIdToString(deviceId);
-                	
-                	if (!socketMap.containsKey(deviceIdtoString))
-                		socketMap.put(deviceIdtoString, socket);
+                	if (!socketMap.containsKey(breakerId)) {
+                		
+                		socketMap.put(breakerId, socket);
+                		log.debug("\"{}\" 차단기에 연결된 소켓 socketMap에 추가 => socketMap: {}", breakerId, socketMap);
+                	}
                 	
                 	if (socketServerUtil.validateData(data))
-                		socketServerReceiver.processIncomingData(data);
-                	
-                	log.trace("============================================================");
+                		socketServerReceiver.processReceivedData(data, breakerId);
 				}
 			
 			} catch (Exception e) {
@@ -147,13 +150,27 @@ public class SocketServer {
 				try {
 					
 					socket.close();
-					socketMap.remove(deviceIdtoString);
-					log.debug("{} 소켓 닫힘", socket);
-                    
+					log.debug("\"{}\" 차단기에 연결된 소켓 연결 종료.", breakerId);
+					
 				} catch (Exception e) {
 					
 					log.error("소켓 닫기 중 에러발생");
 					e.printStackTrace();
+				}
+				
+				if (breakerId != null) {
+					
+					if (socketMap.containsKey(breakerId)) {
+						
+						socketMap.remove(breakerId);
+						log.debug("\"{}\" 차단기에 연결된 소켓 socketMap에 제거 => socketMap: {}", breakerId, socketMap);
+					}
+					
+					if (runningBreakers.contains(breakerId)) {
+						
+						runningBreakers.remove(breakerId);
+						log.debug("\"{}\" 차단기 runningBreakers에서 제거 => runningBreakers: {}", breakerId, runningBreakers);
+					}
 				}
 			}
 			
@@ -162,26 +179,22 @@ public class SocketServer {
 	}
 	
 	/**
-	 * 서버가 종료될때 {@linkplain socketPort} 포트로 연결된 소켓 닫음.
+	 * 서버가 종료될때 서버소켓 연결 종료.
 	 */
 	@PreDestroy
 	private void closeSocket() {
 		
 		ServerConfig.isServerRunning = false;
-		log.debug("서버 종료 이벤트 발생");
 		
-		serverSocketMap.forEach((port, serverSocket) -> {
+		try {
 			
-			try {
-				
-				serverSocket.close();
-				log.debug("{} 포트 소켓 닫음", port);
-				
-			} catch (Exception e) {
-				
-				log.error("소켓닫기 실패");
-				e.printStackTrace();
-			}
-		});
+			serverSocket.close();
+			log.debug("서버소켓 연결 종료.");
+			
+		} catch (Exception e) {
+			
+			log.error("서버소켓 종료 실패.");
+			e.printStackTrace();
+		}
 	}
 }

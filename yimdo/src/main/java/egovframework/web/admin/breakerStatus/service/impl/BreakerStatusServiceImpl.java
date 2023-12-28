@@ -8,11 +8,11 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 
-import egovframework.web.admin.breakerManagement.vo.BreakerManagementVo;
+import egovframework.socketServer.component.BreakerController;
+import egovframework.socketServer.vo.BreakerControllerVo;
 import egovframework.web.admin.breakerStatus.service.BreakerStatusService;
+import egovframework.web.admin.breakerStatus.vo.BreakerManagementVo;
 import egovframework.web.common.service.impl.CommonDataMapper;
-import egovframework.web.common.vo.BreakerInfoVo;
-import egovframework.yimdoSystem.breakerController.BreakerController;
 import lombok.extern.slf4j.Slf4j;
 
 @Service("breakerStatusService")
@@ -61,52 +61,29 @@ public class BreakerStatusServiceImpl implements BreakerStatusService {
 	 * @return 각 breakerId를 key값으로 해당 차단기에 대한 로직이 정상적으로 수행됬다면 "success", 실패했다면 "fail"
 	 */
 	@Override
-	public Map<String, Object> updateBreakerStatus(BreakerManagementVo breakerManagementVo) {
-		log.debug("updateBreakerStatus() 시작");
+	public void updateBreakerStatus(BreakerManagementVo breakerManagementVo) {
 		
 		Map<String, Object> map = new HashMap<String, Object>();
+		
 		List<String> selectedBreakers = breakerManagementVo.getSelectedBreakers();
+		String modifier = breakerManagementVo.getModifier();
+		String modifyDetail = breakerManagementVo.getModifyDetail();
+		String elementCode = breakerManagementVo.getSelectedElement();
+		String policyCode = breakerManagementVo.getSelectedPolicy();
+		String systemControl = breakerManagementVo.getSystemControl();
 		
 		for (String breakerId : selectedBreakers) {
 			
-			BreakerInfoVo breakerInfoVo = null;
-			
-			int retryCount = 0;
-			while (retryCount < 3) {
-				
-				try {
-					
-					breakerInfoVo = commonDataMapper.getBreakerById(breakerId);
-					break;
-					
-				} catch (Exception e) {
-					
-					log.error("DB에러");
-					e.printStackTrace();
-					retryCount++;
-				}
-			}
-			
-			if (breakerInfoVo != null) {
-				
-				breakerInfoVo.setBreakerPolicyCode(breakerManagementVo.getSelectedPolicy());
-				breakerInfoVo.setElementCode(breakerManagementVo.getSelectedElement());
-				breakerInfoVo.setModifyDetail(breakerManagementVo.getModifyDetail());
-				breakerInfoVo.setModifier(breakerManagementVo.getModifier());
-				breakerInfoVo.setSystemControl(breakerManagementVo.getSystemControl());
-				
-				if (breakerController.breakerRequest(breakerInfoVo) > 0)
-					map.put(breakerId, "success");
-				else
-					map.put(breakerId, "fail");
-				
-			} else {
-				
-				map.put(breakerId, "fail");
-			}
+    		BreakerControllerVo breakerControllerVo = new BreakerControllerVo(breakerId, 
+    																		  policyCode, 
+    																		  modifier, 
+    																		  elementCode, 
+																			  modifyDetail);
+    		
+    		breakerControllerVo.setSystemControl(systemControl);
+    		
+    		breakerController.breakerRequest(breakerControllerVo);
+			map.put(breakerId, "success");
 		}
-		
-		log.debug("updateBreakerStatus() 끝");
-		return map;
 	}
 }

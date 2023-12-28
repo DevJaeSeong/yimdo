@@ -6,15 +6,13 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class AesEncrypter {
 
 	private String initializaionVector; // 초기화 벡터
@@ -75,7 +73,6 @@ public class AesEncrypter {
     }
 	
 	public String encrypt(String value) throws NoSuchAlgorithmException, GeneralSecurityException, UnsupportedEncodingException {
-		log.debug("암호화할 내용: {}", value);
 		
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(initializaionVector.getBytes()));
@@ -83,13 +80,11 @@ public class AesEncrypter {
 		byte[] encrypted = cipher.doFinal(value.getBytes("UTF-8"));
 		
 		String encryptedString = new String(Base64.encodeBase64(encrypted));
-		log.debug("암호화된 내용:{}", encryptedString);
 		
 		return encryptedString;
 	}
 	
-	public String decrypt(String value) throws NoSuchAlgorithmException, GeneralSecurityException, UnsupportedEncodingException {
-		log.debug("복호화할 내용: {}", value);
+	public String decrypt(String value) throws NoSuchAlgorithmException, GeneralSecurityException, UnsupportedEncodingException, BadPaddingException {
 		
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		cipher.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(initializaionVector.getBytes()));
@@ -97,7 +92,6 @@ public class AesEncrypter {
 		byte[] valueByteArr = Base64.decodeBase64(value.getBytes());
 		
 		String decryptedString = new String(cipher.doFinal(valueByteArr), "UTF-8");
-		log.debug("복호화된 내용:{}", decryptedString);
 		
 		return decryptedString;
 	}

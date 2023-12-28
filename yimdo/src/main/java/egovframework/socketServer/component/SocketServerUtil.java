@@ -22,7 +22,6 @@ public class SocketServerUtil {
 	
 	private Map<String, Socket> socketMap = SocketServerContext.getSocketMap();
 	private Set<String> runningBreakers = SocketServerContext.getRunningBreakers();
-	private Map<String, Boolean> processingNormalOpen = SocketServerContext.getProcessingNormalOpen();
 	
     /**
      * data가 유효한 데이터인지 검사하여 boolean으로 리턴.
@@ -31,26 +30,30 @@ public class SocketServerUtil {
      */
 	public boolean validateData(byte[] data) {
 
-		byte[] deviceId = { (byte) data[1], (byte) data[2] };
-		String deviceIdtoString = deviceIdToString(deviceId);
-		Socket socket = (Socket) socketMap.get(deviceIdtoString);
-		boolean isDataValid = false;
+		byte reciveDataProtocalId = (byte) data[0];
+		String breakerId = hexDataToString((byte) data[1], (byte) data[2]);
+		Socket socket = (Socket) socketMap.get(breakerId);
+		int dataLengthByHeader = (byte) data[5] & 0xff;
+		int realDataLength = data.length - ServerConfig.HEADER_LENGTH;
+		
+		boolean isValid = false;
 
-		log.trace("통신이 이뤄진 소켓: {}", socket);
-
-		if (data[0] != ServerConfig.PROTOCAL_ID)
-			log.warn("식별되지 않은 Protocol ID.");
+		if (reciveDataProtocalId != ServerConfig.PROTOCAL_ID)
+			log.debug("식별되지 않은 Protocol ID. => {}", reciveDataProtocalId);
+		
 		else if (socket == null)
-			log.warn("일치하는 deviceId 없음.");
+			log.debug("\"{}\" 차단기에 연결된 소켓 없음.", breakerId);
+		
 		else if (socket.isClosed())
-			log.warn("소켓이 닫혀있음.");
-		else if ((data[5] & 0xff) != (data.length - ServerConfig.HEADER_LENGTH))
-			log.warn("받은 데이터의 명시된 payload 크기와 수신한 payload 크기가 다름.");
+			log.debug("\"{}\" 차단기에 연결된 소켓 이미 종료됨.", breakerId);
+		
+		else if (dataLengthByHeader != realDataLength)
+			log.debug("헤더에 명시된 데이터 길이와 수신한 데이터 길이가 다름. => 명시된 길이: {}, 실제 길이: {}", dataLengthByHeader, realDataLength);
+		
 		else
-			isDataValid = true;
+			isValid = true;
 
-		log.trace("데이터 유효성 결과: {}", isDataValid);
-		return isDataValid;
+		return isValid;
 	}
 	
 	/**
@@ -83,15 +86,17 @@ public class SocketServerUtil {
 		return sendData;
 	}
 	
-    /**
-     * deviceId 부분 바이트 데이터를 4자리의 문자열로 변환.
-     * @param deviceId 받은 데이터의 deviceID 부분
-     * @return deviceId[0], deviceId[1]을 합친 4자리 문자열
-     */
-    public String deviceIdToString(byte[] deviceId) {
+	/**
+	 * 16진수 데이터를 그대로 문자열로 변환한후 합쳐 길이가 4인 문자열을 반환하는 메서드.
+	 * 
+	 * @param frontHexData 앞 2글자 (예시: (byte) 0x50)
+	 * @param backHexData 뒤 2글자 (예시: (byte) 0x01)
+	 * @return (frontBreakerId + backBreakerId) 문자열 (예시결과: "5001")
+	 */
+    public String hexDataToString(byte frontHexData, byte backHexData) {
     	
-    	String deviceId1 = Integer.toHexString(deviceId[0] & 0xff);
-    	String deviceId2 = Integer.toHexString(deviceId[1] & 0xff);
+    	String deviceId1 = Integer.toHexString(frontHexData & 0xff);
+    	String deviceId2 = Integer.toHexString(backHexData & 0xff);
     	
     	if (deviceId1.length() <= 1) deviceId1 = "0" + deviceId1;
     	if (deviceId2.length() <= 1) deviceId2 = "0" + deviceId2;
@@ -135,8 +140,6 @@ public class SocketServerUtil {
 			
 			reciveDateTime = makeDateTimeFormat(dateTime.substring(0, 15));
 			resDateTime = makeDateTimeFormat(dateTime.substring(15, 30));
-			log.debug("reciveDateTime: {}", reciveDateTime);
-			log.debug("resDateTime: {}", resDateTime);
 			
 		} catch (Exception e) {
 
@@ -237,11 +240,7 @@ public class SocketServerUtil {
         log.debug("{}", sb.toString());
 	}
 	
-	/**
-	 * byte[] 데이터 내용을 콘솔에 출력합니다.
-	 * @param data 받은 byte[] 데이터
-	 */
-	public void printByteData(byte[] data, String word) {
+	public String printByteDataToString(byte[] data) {
 		
         StringBuilder sb = new StringBuilder("[");
         
@@ -254,43 +253,8 @@ public class SocketServerUtil {
         sb.setLength(sb.length() - 2);
         sb.append("]");
 
-        log.debug("{}: {}", word, sb.toString());
+        return sb.toString();
 	}
-	
-	public boolean validateBreakerStatus(String breakerId) {
-		
-		if (socketMap.get(breakerId) == null) {
-			
-			log.error("\"{}\" 차단기가 연결되어있지 않습니다.", breakerId);
-			return false;
-		}
-		
-		if (runningBreakers.contains(breakerId)) {
-			
-			log.warn("해당 차단기가 이전 요청을 처리중입니다.");
-			return false;
-		}
-		
-		if (processingNormalOpen.containsKey(breakerId) && processingNormalOpen.get(breakerId)) {
-			
-			log.warn("해당 차단기가 정상개방 요청을 처리중입니다.");
-			return false;
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * 웹 소켓 핸드셰이크 요청인지 확인.
-	 * 
-	 * @param request 받은 데이터를 문자열로 변환한것
-	 * @return
-	 */
-    public boolean isWebSocketHandshake(String request) {
-    	
-        // 웹 소켓 핸드셰이크는 Upgrade 헤더와 Sec-WebSocket-Key 헤더를 포함
-        return request.contains("Upgrade: websocket") && request.contains("Sec-WebSocket-Key:");
-    }
     
     /**
      * 바이트 배열을 특정 데이터를 기준으로 나눠서 반환.
@@ -320,4 +284,52 @@ public class SocketServerUtil {
 
         return result;
     }
+
+    /**
+     * 수신받은 바이트 배열에서 헤더 부분을 제외한 데이터를 반환.
+     * 
+     * @param data 추출할 데이터
+     * @param payloadLength payload 길이
+     * @return payload 에 해당되는 byte 배열
+     */
+	public byte[] getPayload(byte[] data, int payloadLength) {
+		
+		byte[] payload = new byte[payloadLength];
+		
+    	for (int i = 0; i < payloadLength; i++) {
+    		
+    		payload[i] = (byte) data[ServerConfig.HEADER_LENGTH + i];
+    	}
+		
+		return payload;
+	}
+
+	public boolean validateBreakerStatus(String breakerId, String breakerStatus, String breakerPolicyCode) {
+
+		if (socketMap.get(breakerId) == null) {
+			
+			log.debug("\"{}\" 차단기에 연결된 소켓이 없습니다.", breakerId);
+			return false;
+		}
+		
+		if (runningBreakers.contains(breakerId)) {
+			
+			log.debug("\"{}\" 차단기가 이미 작동중입니다.", breakerId);
+			return false;
+		}
+		
+		if 
+		(
+			(("01".equals(breakerStatus) || "06".equals(breakerStatus)) && ServerConfig.BREAKER_POLICY_NORMAL_OPEN.equals(breakerPolicyCode))
+			|| ("02".equals(breakerStatus) && ServerConfig.BREAKER_POLICY_NORMAL_CLOSE.equals(breakerPolicyCode))
+			|| ("03".equals(breakerStatus) && ServerConfig.BREAKER_POLICY_EMERGENCY_OPEN.equals(breakerPolicyCode))
+			|| ("04".equals(breakerStatus) && ServerConfig.BREAKER_POLICY_EMERGENCY_CLOSE.equals(breakerPolicyCode))
+		) 
+		{
+			log.debug("\"{}\" 차단기의 상태와 정책이 이미 일치합니다.", breakerId);
+			return false;
+		}
+			
+		return true;
+	}
 }

@@ -4,10 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -24,8 +23,13 @@ import egovframework.serverConfig.filter.YimdoFilter;
 @Configuration
 public class SecurityConfiguration {
 	
-	@Autowired @Qualifier("taskExecutor")
-	private ThreadPoolTaskExecutor taskExecutor;
+	private TaskExecutor taskExecutor;
+	
+	@Autowired
+	public SecurityConfiguration(TaskExecutor taskExecutor) {
+		
+		this.taskExecutor = taskExecutor;
+	}
 	
 	//패스워드 인코더
 	@Bean("passwordEncoder")
@@ -107,7 +111,7 @@ public class SecurityConfiguration {
     }
     
     @Bean("yimdoFilter")
-    public YimdoFilter yimdoFilter(ThreadPoolTaskExecutor taskExecutor) throws UnsupportedEncodingException {
+    public YimdoFilter yimdoFilter() throws UnsupportedEncodingException {
     	
     	return new YimdoFilter(aesEncrypter(), taskExecutor);
     }

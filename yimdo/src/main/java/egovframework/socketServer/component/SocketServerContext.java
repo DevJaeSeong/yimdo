@@ -29,11 +29,6 @@ public class SocketServerContext {
 	 */
 	private static final Set<String> runningBreakers = new CopyOnWriteArraySet<String>();
 	
-	/**
-	 * 해당 Map에 차단기ID 가 들어있다면 해당 차단기는 정상개방 요청을 수행중 입니다.
-	 */
-	private static final Map<String, Boolean> processingNormalOpen = new ConcurrentHashMap<String, Boolean>();
-	
 	private static final Set<String> carDetectionBreakers = new CopyOnWriteArraySet<String>();
 	
 	public static Map<String, Socket> getSocketMap() {
@@ -42,10 +37,6 @@ public class SocketServerContext {
 
 	public static Set<String> getRunningBreakers() {
 		return runningBreakers;
-	}
-
-	public static Map<String, Boolean> getProcessingNormalOpen() {
-		return processingNormalOpen;
 	}
 
 	public static Set<String> getCarDetectionBreakers() {

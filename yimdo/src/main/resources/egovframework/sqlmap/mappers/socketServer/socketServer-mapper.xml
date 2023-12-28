@@ -27,7 +27,7 @@
 		SET
 			BREAKER_IP = #{breakerIp}
 		WHERE
-			BREAKER_ID = #{deviceId}
+			BREAKER_ID = #{breakerId}
 	</update>
 	
 	<insert id="insertPresenceReport">
@@ -122,6 +122,16 @@
 			, #{uv}
 			, #{light}
 		)
+	</insert>
+	
+	<insert id="insertBreakerInfo" parameterType="SocketServerVo">
+		INSERT INTO
+			BREAKER_INFO
+			(BREAKER_ID, BREAKER_IP) VALUES (#{breakerId}, #{breakerIp})
+		ON DUPLICATE KEY 
+		UPDATE
+			BREAKER_IP = #{breakerIp}
+			, MOD_DATE = NOW()
 	</insert>
 	
 </mapper>

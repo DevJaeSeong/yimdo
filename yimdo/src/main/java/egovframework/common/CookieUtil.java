@@ -67,4 +67,25 @@ public class CookieUtil {
 		
 		response.addCookie(cookie);
     }
+    
+    public static void deleteJsessionCookie(HttpServletRequest request, HttpServletResponse response) {
+    	
+        Cookie[] cookies = request.getCookies();
+        
+        if (cookies != null) {
+        	
+            for (Cookie cookie : cookies) {
+            	
+                if (cookie.getName().equals("JSESSIONID")) {
+                	
+                    cookie.setMaxAge(0);
+                    cookie.setPath(request.getContextPath());
+                    
+                    response.addCookie(cookie);
+                    
+                    break;
+                }
+            }
+        }
+    }
 }

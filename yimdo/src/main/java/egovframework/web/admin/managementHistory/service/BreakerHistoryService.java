@@ -3,8 +3,8 @@ package egovframework.web.admin.managementHistory.service;
 import java.util.List;
 import java.util.Map;
 
+import egovframework.socketServer.vo.BreakerHistoryVo;
 import egovframework.web.common.paging.PagingVo;
-import egovframework.yimdoSystem.breakerController.BreakerHistoryVo;
 
 public interface BreakerHistoryService {
 

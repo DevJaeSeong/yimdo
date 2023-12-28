@@ -11,12 +11,12 @@ import org.springframework.stereotype.Service;
 import egovframework.api.vo.BreakerControlElement;
 import egovframework.api.vo.MountainWeatherVo;
 import egovframework.api.vo.RiseSetInfoVo;
+import egovframework.socketServer.component.BreakerController;
 import egovframework.socketServer.component.SocketServerContext;
 import egovframework.web.common.service.impl.CommonDataMapper;
 import egovframework.web.common.vo.BreakerInfoVo;
 import egovframework.web.common.vo.ModifyElementVo;
 import egovframework.yimdoSystem.apiDataFetcher.ApiDataFetcher;
-import egovframework.yimdoSystem.breakerController.BreakerController;
 import lombok.extern.slf4j.Slf4j;
 
 @Service("yimdoSystemService")
@@ -121,8 +121,7 @@ public class YimdoSystemService extends AbstractConditionChecker {
 	 * @param modifyElementVos
 	 * @return
 	 */
-	private int controlBreakerByMountainWeather(BreakerInfoVo breakerInfoVo, List<ModifyElementVo> modifyElementVos) {
-		log.trace("controlBreakerByMountainWeather() 시작");
+	private void controlBreakerByMountainWeather(BreakerInfoVo breakerInfoVo, List<ModifyElementVo> modifyElementVos) {
 		
 		MountainWeatherVo mountainWeatherVo;
 		
@@ -135,8 +134,7 @@ public class YimdoSystemService extends AbstractConditionChecker {
 			
 			log.error("인자값 가져오는데 실패.");
 			e.printStackTrace();
-			log.trace("controlBreakerByMountainWeather() 끝");
-			return 0;
+			return;
 		}
 		
 		String baseRainFall = "";
@@ -206,10 +204,9 @@ public class YimdoSystemService extends AbstractConditionChecker {
 			breakerInfoVo.setModifyDetail("시스템에 의한 강제차단 해제.");
 		}
 		
-		int result = breakerController.breakerRequest(breakerInfoVo);
+		//breakerController.breakerRequest(breakerInfoVo);
 		
 		log.trace("controlBreakerByMountainWeather() 끝");
-		return result;
 	}
 	
 	/**
@@ -219,8 +216,7 @@ public class YimdoSystemService extends AbstractConditionChecker {
 	 * @param modifyElementVos
 	 * @return
 	 */
-	private int controlBreakerBySunsetSunrise(BreakerInfoVo breakerInfoVo, List<ModifyElementVo> modifyElementVos) {
-		log.trace("controlBreakerBySunsetSunrise() 시작");
+	private void controlBreakerBySunsetSunrise(BreakerInfoVo breakerInfoVo, List<ModifyElementVo> modifyElementVos) {
 		
 		RiseSetInfoVo riseSetInfoVo;
 		
@@ -232,8 +228,7 @@ public class YimdoSystemService extends AbstractConditionChecker {
 			
 			log.error("인자값 가져오는데 실패.");
 			e.printStackTrace();
-			log.trace("controlBreakerBySunsetSunrise() 끝");
-			return 0;
+			return;
 		}
 		
 		String baseSunrise = "";
@@ -290,9 +285,8 @@ public class YimdoSystemService extends AbstractConditionChecker {
 			breakerInfoVo.setModifyDetail("시스템에 의한 강제차단 해제.");
 		}
 		
-		int result = breakerController.breakerRequest(breakerInfoVo);
+		//breakerController.breakerRequest(breakerInfoVo);
 		
 		log.trace("controlBreakerBySunsetSunrise() 끝");
-		return result;
 	}
 }

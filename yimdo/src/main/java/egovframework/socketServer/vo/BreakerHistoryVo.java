@@ -1,4 +1,4 @@
-package egovframework.yimdoSystem.breakerController;
+package egovframework.socketServer.vo;
 
 import lombok.Data;
 

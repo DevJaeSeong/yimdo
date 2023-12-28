@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 import egovframework.serverConfig.ServerConfig;
 import egovframework.serverConfig.security.mapper.SecurityMapper;
 import egovframework.serverConfig.security.vo.UserDetailVo;
+import egovframework.socketServer.component.BreakerController;
 import egovframework.socketServer.component.SocketServerContext;
+import egovframework.socketServer.vo.BreakerControllerVo;
 import egovframework.web.common.service.impl.CommonDataMapper;
 import egovframework.web.common.vo.BreakerInfoVo;
-import egovframework.yimdoSystem.breakerController.BreakerController;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -68,11 +69,12 @@ public class BeaconService {
 			return;
 		}
 		
-		breakerInfoVo.setBreakerPolicyCode(ServerConfig.breakerPolicyNormalOpen);
-		breakerInfoVo.setElementCode("0001");
-		breakerInfoVo.setModifier(userDetailVo.getUserNm());
-		breakerInfoVo.setModifyDetail(userDetailVo.getUserNm() + " 사용자의 요청에 의한 정상개방.");
+		BreakerControllerVo breakerControllerVo = new BreakerControllerVo(breakerId
+																		  , ServerConfig.BREAKER_POLICY_NORMAL_OPEN
+																		  , "사용자"
+																		  , ServerConfig.BEACON_ELEMENT_CODE
+																		  , "비콘통신을 이용한 사용자의 개방요청");
 		
-		breakerController.breakerRequest(breakerInfoVo);
+		breakerController.breakerRequest(breakerControllerVo);
 	}
 }

@@ -1,4 +1,4 @@
-package egovframework.web.admin.breakerManagement.vo;
+package egovframework.web.admin.breakerStatus.vo;
 
 import java.util.List;
 

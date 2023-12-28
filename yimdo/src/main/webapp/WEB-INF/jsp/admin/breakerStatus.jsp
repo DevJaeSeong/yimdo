@@ -487,10 +487,10 @@ function fetch_updateBreakerStatus() {
 	let selectedPolicy = $(".policyRadio").filter(':checked:first').val();
 	let systemControl = 'n';
 
-	if (selectedPolicy == "1002") {
+	if (selectedPolicy == "1001" || selectedPolicy == "1002") {
 		
 		systemControl = 'y'
-		modifyDetail = "관리자에 의한 강제 정책 해제.";
+		//modifyDetail = "관리자에 의한 강제 정책 해제.";
 	}
 	
 	let msg = {
@@ -737,16 +737,20 @@ function fetch_updateBreakerStatus() {
                                         <td class="pt20 pb20">
                                             <ul class="radio">
                                                 <li>
-                                                    <input type="radio" value="2002" name="date_area" id="date_area6" class="policyRadio" checked="checked">
-                                                    <label for="date_area6"><span>출입차단</span></label>
+                                                    <input type="radio" value="1001" name="date_area" id="date_area6" class="policyRadio">
+                                                    <label for="date_area6"><span>정상개방</span></label>
                                                 </li>
                                                 <li>
-                                                    <input type="radio" value="2001" name="date_area" id="date_area7" class="policyRadio">
-                                                    <label for="date_area7"><span>출입개방</span></label>
+                                                    <input type="radio" value="1002" name="date_area" id="date_area7" class="policyRadio" checked>
+                                                    <label for="date_area7"><span>정상차단</span></label>
                                                 </li>
                                                 <li>
-                                                    <input type="radio" value="1002" name="date_area" id="date_area8" class="policyRadio">
-                                                    <label for="date_area8"><span>정책해제</span></label>
+                                                    <input type="radio" value="2001" name="date_area" id="date_area8" class="policyRadio">
+                                                    <label for="date_area8"><span>강제개방</span></label>
+                                                </li>
+                                                <li>
+                                                    <input type="radio" value="2002" name="date_area" id="date_area9" class="policyRadio">
+                                                    <label for="date_area9"><span>강제차단</span></label>
                                                 </li>
                                             </ul>
                                         </td>

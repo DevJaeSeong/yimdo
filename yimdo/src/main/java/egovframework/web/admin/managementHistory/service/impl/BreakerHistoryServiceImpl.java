@@ -7,10 +7,10 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 
+import egovframework.socketServer.vo.BreakerHistoryVo;
 import egovframework.web.admin.managementHistory.service.BreakerHistoryService;
 import egovframework.web.common.paging.PagingMaker;
 import egovframework.web.common.paging.PagingVo;
-import egovframework.yimdoSystem.breakerController.BreakerHistoryVo;
 import lombok.extern.slf4j.Slf4j;
 
 @Service("breakerHistoryService")
@@ -37,53 +37,37 @@ public class BreakerHistoryServiceImpl implements BreakerHistoryService {
 	
 	@Override
 	public List<BreakerHistoryVo> getBreakerHistoryList(PagingVo pagingVo) {
-		log.trace("getBreakerHistoryList() 시작");
 		
 		List<BreakerHistoryVo> breakerHistoryVos = null;
 		
-		int retryCount = 0;
-		while (retryCount < 3) {
+		try {
 			
-			try {
-				
-				breakerHistoryVos = breakerHistoryMapper.getBreakerHistoryList(pagingVo);
-				break;
-				
-			} catch (Exception e) {
-				
-				log.error("DB 에러");
-				e.printStackTrace();
-				retryCount++;
-			}
+			breakerHistoryVos = breakerHistoryMapper.getBreakerHistoryList(pagingVo);
+			
+		} catch (Exception e) {
+			
+			log.error("DB 에러");
+			e.printStackTrace();
 		}
 		
-		log.trace("getBreakerHistoryList() 끝");
 		return breakerHistoryVos;
 	}
 
 	@Override
 	public int getBreakerHistoryListTotalCount(PagingVo pagingVo) {
-		log.trace("getBreakerHistoryListTotalCount() 시작");
 
 		int result = 0;
 		
-		int retryCount = 0;
-		while (retryCount < 3) {
+		try {
 			
-			try {
-				
-				result = breakerHistoryMapper.getBreakerHistoryListTotalCount(pagingVo);
-				break;
-				
-			} catch (Exception e) {
-				
-				log.error("DB 에러");
-				e.printStackTrace();
-				retryCount++;
-			}
+			result = breakerHistoryMapper.getBreakerHistoryListTotalCount(pagingVo);
+			
+		} catch (Exception e) {
+			
+			log.error("DB 에러");
+			e.printStackTrace();
 		}
 		
-		log.trace("getBreakerHistoryListTotalCount() 끝");
 		return result;
 	}
 }

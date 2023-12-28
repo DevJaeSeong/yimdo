@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import javax.crypto.BadPaddingException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -50,13 +51,24 @@ public class YimdoFilter extends OncePerRequestFilter {
 		
 		printRequest((YimdoServletRequestWrapper) request, authentication);
 		
-		if (!(authentication instanceof AnonymousAuthenticationToken))
-			validateAuthentication(request, (YimdoUser) authentication.getPrincipal());
+		if (!(authentication instanceof AnonymousAuthenticationToken)) {
+			
+			try {
+				
+				validateAuthentication(request, response, (YimdoUser) authentication.getPrincipal());
+				
+			} catch (CustomAuthenticatedInfoException e) {
+				
+				CookieUtil.deleteCookie(ServerConfig.IDENTIFY_TOKEN_NAME, request, response);
+				CookieUtil.deleteJsessionCookie(request, response);
+				throw(e);
+			}
+		}
 		
 		filterChain.doFilter(request, response);
 	}
 	
-	private void validateAuthentication(HttpServletRequest request, YimdoUser yimdoUser) throws AuthenticationException {
+	private void validateAuthentication(HttpServletRequest request, HttpServletResponse response, YimdoUser yimdoUser) throws AuthenticationException {
 		
 		String authenticatedIp = yimdoUser.getAuthenticatedIp();
 		String requestIp = request.getRemoteAddr();
@@ -77,11 +89,17 @@ public class YimdoFilter extends OncePerRequestFilter {
 			throw new CustomAuthenticatedInfoException("요청sessionId와 인증된sessionId가 다름 (요청sessionId: " + requestSessionId + ", 인증된sessionId: " + authenticatedSessionId + ")");
 		
 		// 식별토큰 검사
-		if (cookie == null)
+		if (cookie == null) {
+			
 			throw new CustomAuthenticatedInfoException("식별토큰을 가져오지 못했습니다.");
+		}
 		
 		try { requestIdentifyTokenValue = aesEncrypter.decrypt(cookie.getValue()); } 
-		catch (Exception e) {
+		catch (BadPaddingException e) {
+
+			throw new CustomAuthenticatedInfoException("암호키와 호환되지 않는 값: " + e.getMessage());
+			
+		} catch (Exception e) {
 			
 			e.printStackTrace();
 			throw new CustomAuthenticatedInfoException("복호화 도중 문제 발생: " + e.getMessage());

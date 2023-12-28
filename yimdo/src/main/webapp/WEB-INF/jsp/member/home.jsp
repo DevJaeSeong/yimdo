@@ -63,7 +63,9 @@ function fetch_breakerRequest() {
                     <p class="yim_direct_txt03 mb20">스마트 임도 차단기 시스템을 이용하시기 위하여<br/>임도 출입 신청을 작성해주세요.</p>
                     <div class="respon_box">
                         <a href="/member/accessYimdo.do" class="direct_btn mr15" title="임도 출입 신청 바로가기"><p>임도 출입 신청<br/><span class="direct_arrow">바로가기</span></p></a>
+                        <!--  
                         <a href="#none" class="direct_btn gr_c_orange mr15" title="임도 개방 버튼" onclick="fetch_breakerRequest(); return false;"><p>임도 개방<br/><span class="direct_arrow">버튼</span></p></a>
+                    	-->
                     </div>
                     <!-- 로그아웃버튼 시작 -->
                     <div class="logout_box">
