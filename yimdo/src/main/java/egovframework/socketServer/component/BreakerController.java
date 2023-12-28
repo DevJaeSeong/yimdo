@@ -29,6 +29,12 @@ public class BreakerController {
 		this.breakerControllerMapper = breakerControllerMapper;
 	}
 
+	/**
+	 * 차단기 상태변경요청을 전송하고 그 이력을 DB에 저장.
+	 * 
+	 * @param breakerControllerVo 차단기 상태변경 요청에 사용되는 vo
+	 * @see BreakerControllerVo
+	 */
 	public void breakerRequest(BreakerControllerVo breakerControllerVo) {
 		log.debug("차단기 조작 요청 진행 => {}", breakerControllerVo);
 		

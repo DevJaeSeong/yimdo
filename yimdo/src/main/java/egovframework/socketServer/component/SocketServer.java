@@ -68,15 +68,8 @@ public class SocketServer {
     				
 				} catch (Exception e) {
 					
-					if (Thread.interrupted()) {
-						
-						log.debug("해당 스레드가 block 상태에서 중지 요청이 들어왔습니다.");
-						
-					} else {
-						
-						log.error("에러 발생");
-						e.printStackTrace();
-					}
+					if (Thread.interrupted()) { log.debug("해당 스레드가 block 상태에서 중지 요청이 들어왔습니다."); } 
+					else 					  { log.error("에러 발생"); e.printStackTrace(); }
 				}
     		}
     		
