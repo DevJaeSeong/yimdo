@@ -73,7 +73,7 @@ public class BeaconService {
 																		  , ServerConfig.BREAKER_POLICY_NORMAL_OPEN
 																		  , "사용자"
 																		  , ServerConfig.BEACON_ELEMENT_CODE
-																		  , "비콘통신을 이용한 사용자의 개방요청");
+																		  , "비콘통신을 이용한 사용자의 개방요청.");
 		
 		breakerController.breakerRequest(breakerControllerVo);
 	}

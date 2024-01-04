@@ -27,6 +27,7 @@ public class SocketServerReceiver {
 	private Map<String, Socket> socketMap = SocketServerContext.getSocketMap();
 	private Set<String> runningBreakers = SocketServerContext.getRunningBreakers();
 	private Set<String> carDetectionBreakers = SocketServerContext.getCarDetectionBreakers();
+	private Set<String> carDetectionOpenedBreakers = SocketServerContext.getCarDetectionbopenedbreakers();
 	
 	private SocketServerMapper socketServerMapper;
 	private SocketServerUtil socketServerUtil;
@@ -145,6 +146,7 @@ public class SocketServerReceiver {
     	
     	String breakerPolicyCode = "";
     	
+    	// 차단기 상태 기록 및 업데이트
     	try {
     		
     		Map<String, String> map = new HashMap<String, String>();
@@ -163,6 +165,42 @@ public class SocketServerReceiver {
 			return;
 		}
     	
+    	// 차단기 상태가 "06" 인 경우
+    	if ("06".equals(breakerStatus)) {
+    		
+    		carDetectionOpenedBreakers.add(breakerId);
+    		breakerStatus = "01";
+    		
+    	} else {
+    		
+    		// 차단기 개방상태에서 차량감지중 + 차량감지 신호를 더이상 보내지 않는 상태
+    		if (carDetectionOpenedBreakers.contains(breakerId) && !carDetectionBreakers.contains(breakerId)) {
+    			
+    			carDetectionOpenedBreakers.remove(breakerId);
+    			
+    			try {
+					
+    				socketServerMapper.updateBreakerPolicy(Map.of("breakerId", breakerId, "breakerPolicyCode", ServerConfig.BREAKER_POLICY_NORMAL_CLOSE));
+    				
+				} catch (Exception e) {
+					
+					log.error("DB 에러.");
+					e.printStackTrace();
+				}
+    			
+        		BreakerControllerVo breakerControllerVo = new BreakerControllerVo(breakerId, 
+        																		  ServerConfig.BREAKER_POLICY_NORMAL_CLOSE, 
+																				  ServerConfig.SYSTEM_MODIFIER, 
+																				  ServerConfig.SYSTEM_ELEMENT_CODE, 
+																				  "차량이 더이상 감지되지 않아 차단기 차단요청.");
+				
+				breakerController.breakerRequest(breakerControllerVo);
+    			
+    			return;
+    		}
+    	}
+    	
+    	// 차단기 상태와 정책이 일치하지 않을 경우
     	if (!isMatchPolicyAndStatus(breakerPolicyCode, breakerStatus, breakerId)) {
     		
     		log.debug("\"{}\" 차단기의 정책과 상태가 일치하지않음. => breakerPolicyCode: {}, breakerStatus: {}", breakerId, breakerPolicyCode, breakerStatus);
@@ -171,7 +209,7 @@ public class SocketServerReceiver {
     																		  breakerPolicyCode, 
     								  										  ServerConfig.SYSTEM_MODIFIER, 
     								  										  ServerConfig.SYSTEM_ELEMENT_CODE, 
-    								  										  "차단기의 정책과 상태 불일치로 인한 재요청");
+    								  										  "차단기의 정책과 상태 불일치로 인한 재요청.");
     		
     		breakerController.breakerRequest(breakerControllerVo);
     	}
@@ -342,7 +380,10 @@ public class SocketServerReceiver {
 	 * @param payload
 	 */
 	private void carDetectionEventReport(String breakerId, byte[] payload) {
-		log.debug("carDetectionEventReport() 메서드 호출");
+		
+		// 서버가 이미 해당 차단기가 차량감지중인 상태인걸 안다면 로직무시.
+		if (carDetectionBreakers.contains(breakerId)) 
+			return;
 		
 		taskExecutor.execute(() -> {
 			
@@ -351,13 +392,13 @@ public class SocketServerReceiver {
 				log.debug("\"{}\" 차단기에서 차량 감지", breakerId);
 				
 				carDetectionBreakers.add(breakerId);
-				log.debug("{} 차단기 차량감지 추가, {}", breakerId, carDetectionBreakers);
+				log.debug("\"{}\" 차단기 차량감지 추가, {}", breakerId, carDetectionBreakers);
 				
 				try 							{ Thread.sleep(5000); } 
 				catch (InterruptedException e) 	{ e.printStackTrace(); }
 				
 				carDetectionBreakers.remove(breakerId);
-				log.debug("{} 차단기 차량감지 제거, {}", breakerId, carDetectionBreakers);
+				log.debug("\"{}\" 차단기 차량감지 제거, {}", breakerId, carDetectionBreakers);
 				
 			} catch (Exception e) {
 				

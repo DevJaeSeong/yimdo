@@ -29,7 +29,15 @@ public class SocketServerContext {
 	 */
 	private static final Set<String> runningBreakers = new CopyOnWriteArraySet<String>();
 	
+	/**
+	 * 차량감지 신호를 보낸 차단기를 저장한 집합.
+	 */
 	private static final Set<String> carDetectionBreakers = new CopyOnWriteArraySet<String>();
+	
+	/**
+	 * 차단기가 개방된 상태에서 차량감지중인 상태인 차단기를 저장한 집합.
+	 */
+	private static final Set<String> carDetectionOpenedBreakers = new CopyOnWriteArraySet<String>();
 	
 	public static Map<String, Socket> getSocketMap() {
 		return socketMap;
@@ -41,5 +49,9 @@ public class SocketServerContext {
 
 	public static Set<String> getCarDetectionBreakers() {
 		return carDetectionBreakers;
+	}
+
+	public static Set<String> getCarDetectionbopenedbreakers() {
+		return carDetectionOpenedBreakers;
 	}
 }

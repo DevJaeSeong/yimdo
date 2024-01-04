@@ -50,13 +50,8 @@ public class SocketServer {
     	try (ServerSocket serverSocket = new ServerSocket(ServerConfig.SOCKET_PORT)) {
     		
     		this.serverSocket = serverSocket;
-    		log.debug("\"{}\"포트 서버소켓 개방", ServerConfig.SOCKET_PORT);
+    		log.debug("\"{}\"포트로 서버소켓 개방", ServerConfig.SOCKET_PORT);
     		
-    		/*
-    		 * 1. accept() 메서드는 ServerConfig.socketPort 포트로 소켓연결이 될때까지 block 상태를 유지하다가 연결요청이 들어오면 Socket 반환.
-    		 * 2. 반환된 Socket을 인자값으로 SocketServerRunnable 생성.
-    		 * 3. TaskExecutor는 SocketServerRunnable의 run() 메서드를 비동기로 실행. (여러 작업을 동시에 처리)
-    		 */
     		while (ServerConfig.isServerRunning) { 
     			
     			try {
@@ -64,7 +59,7 @@ public class SocketServer {
     				Socket socket = serverSocket.accept();	// 연결 요청이 들어올때까지 block, 연결에 성공하면 Socket 객체를 반환하고 로직 진행.
     				log.debug("연결된 socket: {}", socket);
     				
-    				taskExecutor.execute(new SocketServerRunnable(socket)); 
+    				taskExecutor.execute(new CustomRunnable(socket)); 
     				
 				} catch (Exception e) {
 					
@@ -75,7 +70,7 @@ public class SocketServer {
     		
 		} catch (Exception e) {
 			
-			log.error("{}포트 소켓 개방중 오류발생", ServerConfig.SOCKET_PORT);
+			log.error("\"{}\"포트로 서버소켓 개방중 오류발생", ServerConfig.SOCKET_PORT);
 			e.printStackTrace();
 		}
     	
@@ -85,11 +80,11 @@ public class SocketServer {
 	/**
 	 * {@link TaskExecutor}의 작업내용을 정의한 {@link Runnable}의 구현체.
 	 */
-	private class SocketServerRunnable implements Runnable {
+	private class CustomRunnable implements Runnable {
 
 		private Socket socket;
 		
-		public SocketServerRunnable(Socket socket) {
+		public CustomRunnable(Socket socket) {
 			
 			this.socket = socket;
 		}
