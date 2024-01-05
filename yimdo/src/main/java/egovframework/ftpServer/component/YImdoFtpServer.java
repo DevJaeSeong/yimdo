@@ -12,7 +12,6 @@ import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.SaltedPasswordEncryptor;
 import org.apache.ftpserver.usermanager.impl.PropertiesUserManager;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import egovframework.serverConfig.ServerConfig;
@@ -21,26 +20,25 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * FTP 서버 구축 클래스 입니다.
  */
-@Component("yImdoFtpServer")
+@Component
 @Slf4j
 public class YImdoFtpServer {
 	
 	public void openServer() {
-		log.debug("openServer() 시작");
 		
 		FtpServer ftpServer = null;
 		
 		try {
 			
 			ftpServer = createFtpServer();
-			
 			ftpServer.start();
-			log.debug("ftp 서버 시작");
+			log.debug("\"{}\" 포트로 FTP 서버 시작.", ServerConfig.FTP_PORT);
 			
 			Thread.sleep(Long.MAX_VALUE);
 			
 		} catch (Exception e) {
-			
+
+			log.error("FTP 서버 문제 발생.");
 			e.printStackTrace();
 			
 		} finally {
@@ -48,11 +46,9 @@ public class YImdoFtpServer {
             if (ftpServer != null && !ftpServer.isStopped()) {
             	
                 ftpServer.stop();
-                log.debug("ftp 서버 종료");
+                log.debug("FTP 서버 종료.");
             }
 		}
-		
-		log.debug("openServer() 끝");
 	}
 
 	/**
@@ -66,7 +62,6 @@ public class YImdoFtpServer {
 		
         ListenerFactory listenerFactory = new ListenerFactory();
         listenerFactory.setPort(ServerConfig.FTP_PORT);
-        log.debug("FTP 서버 포트: {}", ServerConfig.FTP_PORT);
         
         FtpServerFactory ftpServerFactory = new FtpServerFactory();
         ftpServerFactory.addListener("default", listenerFactory.createListener());
@@ -84,11 +79,9 @@ public class YImdoFtpServer {
 	 */
 	private UserManager createUserManager() throws IOException, FtpException {
 		
-		Resource resource = new ClassPathResource(ServerConfig.GLOBALS_PROPERTIES_RESOURCE_PATH);
-        
         PropertiesUserManagerFactory propertiesUserManagerFactory = new PropertiesUserManagerFactory();
         propertiesUserManagerFactory.setPasswordEncryptor(new SaltedPasswordEncryptor());
-        propertiesUserManagerFactory.setFile(resource.getFile());
+        propertiesUserManagerFactory.setFile(new ClassPathResource(ServerConfig.GLOBALS_PROPERTIES_RESOURCE_PATH).getFile());
 		
         return propertiesUserManagerFactory.createUserManager();
 	}

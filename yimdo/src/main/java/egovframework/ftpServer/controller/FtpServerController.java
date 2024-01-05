@@ -1,7 +1,6 @@
 package egovframework.ftpServer.controller;
 
-import javax.annotation.Resource;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
@@ -10,9 +9,14 @@ import egovframework.ftpServer.component.YImdoFtpServer;
 @Controller
 public class FtpServerController {
 
-	@Resource(name = "yImdoFtpServer")
 	private YImdoFtpServer yImdoFtpServer;
 	
+	@Autowired
+	public FtpServerController(YImdoFtpServer yImdoFtpServer) {
+		
+		this.yImdoFtpServer = yImdoFtpServer;
+	}
+
 	@Scheduled(initialDelay = 5000, fixedDelay = Long.MAX_VALUE)
 	private void serverStart() {
 		

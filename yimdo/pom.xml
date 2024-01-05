@@ -10,8 +10,8 @@
 	
 	<properties>
 		<java-version>11</java-version>
-		<org.springframework-version>5.3.20</org.springframework-version>
-		<security.version>5.5.8</security.version>
+		<org.springframework-version>5.3.31</org.springframework-version>
+		<security.version>5.8.9</security.version>
 	</properties>
 	
 	<repositories>
@@ -87,13 +87,6 @@
 		    <artifactId>logback-classic</artifactId>
 		    <version>1.2.13</version>
 		    <scope>compile</scope>
-		</dependency>
-
-		<!-- @Inject -->
-		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
-			<version>1</version>
 		</dependency>
 				
 		<!-- Servlet -->

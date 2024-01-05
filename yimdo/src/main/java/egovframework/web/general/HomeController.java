@@ -3,7 +3,6 @@ package egovframework.web.general;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -25,14 +24,15 @@ import egovframework.serverConfig.ServerConfig;
 import egovframework.serverConfig.security.vo.UserVo;
 import egovframework.web.member.main.service.MemberService;
 import egovframework.web.member.main.vo.MemberVoForCreate;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/general")
+@AllArgsConstructor
 @Slf4j
 public class HomeController {
 	
-	@Resource(name = "memberService")
 	private MemberService memberService;
 	
 	/**

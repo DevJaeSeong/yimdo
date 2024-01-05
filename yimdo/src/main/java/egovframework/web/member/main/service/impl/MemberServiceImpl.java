@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -20,19 +19,16 @@ import egovframework.serverConfig.security.beans.YimdoAuthenticater;
 import egovframework.serverConfig.security.vo.UserVo;
 import egovframework.web.member.main.service.MemberService;
 import egovframework.web.member.main.vo.MemberVoForCreate;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service("memberService")
+@AllArgsConstructor
 @Slf4j
 public class MemberServiceImpl implements MemberService {
 	
-	@Resource(name = "memberMapper")
 	private MemberMapper memberMapper;
-	
-	@Resource(name = "passwordEncoder")
 	private PasswordEncoder encoder;
-	
-	@Resource(name = "yimdoAuthenticater")
 	private YimdoAuthenticater yimdoAuthenticater;
 	
 	/**

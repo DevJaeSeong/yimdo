@@ -77,6 +77,10 @@
     	<level value="INFO" />
     </logger>
     
+    <logger name="org.apache.ftpserver">
+    	<level value="INFO" />
+    </logger>
+    
     <!-- 특정 클래스 -->
     <logger name="egovframework.socketServer.mapper">
     	<level value="INFO" />
