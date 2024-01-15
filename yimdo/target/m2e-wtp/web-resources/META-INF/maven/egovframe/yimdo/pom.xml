@@ -170,7 +170,7 @@
 	    	<version>2.4.1</version>
 		</dependency>        
 
-		<!-- jackson -->
+		<!-- HttpConverter 가 Json 으로 맵핑 하기 위한 의존성 -->
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
 		    <artifactId>jackson-core</artifactId>
